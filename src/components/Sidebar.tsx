@@ -38,11 +38,11 @@ export function Sidebar({ isCollapsed, onExpandRequest }: SidebarProps) {
                   }}
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center rounded-lg text-sm font-medium transition-colors",
+                      "flex items-center rounded-lg text-sm font-medium transition-all duration-200",
                       isCollapsed ? "justify-center px-3 py-2" : "space-x-3 px-3 py-2",
                       isActive
-                        ? "bg-primary text-primary-foreground"
-                        : "text-foreground hover:bg-sidebar-hover"
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     )
                   }
                   title={isCollapsed ? item.name : undefined}

@@ -55,6 +55,7 @@ export default {
 				// Custom recruitment portal colors
 				nav: {
 					background: 'hsl(var(--nav-background))',
+					foreground: 'hsl(var(--nav-foreground))',
 					border: 'hsl(var(--nav-border))'
 				},
 				sidebar: {

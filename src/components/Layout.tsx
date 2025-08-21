@@ -188,7 +188,7 @@ export function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* Top Navigation */}
-      <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-nav-background border-b border-nav-border">
+      <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-nav-background border-b border-nav-border shadow-sm">
         <div className="flex items-center justify-between h-full px-6">
           {/* Left: Menu Toggle + Company/User Name */}
           <div className="flex items-center space-x-4">
@@ -196,19 +196,19 @@ export function Layout({ children }: LayoutProps) {
               variant="ghost" 
               size="icon" 
               onClick={toggleSidebar}
-              className="hover:bg-muted"
+              className="hover:bg-white/10 text-nav-foreground"
             >
               <Menu className="h-5 w-5" />
             </Button>
-            <div className="font-semibold text-lg text-foreground">
-              Pankaj Negi
+            <div className="font-semibold text-lg text-nav-foreground">
+              Veersa Recruit
             </div>
           </div>
 
           {/* Center: Search Bar */}
           <div className="flex-1 max-w-lg mx-8" ref={searchRef}>
             <div className="relative group">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5 transition-colors group-focus-within:text-primary" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 transition-colors group-focus-within:text-primary" />
               <Input
                 type="text"
                 placeholder="Search candidates, jobs, or activities..."
@@ -216,7 +216,7 @@ export function Layout({ children }: LayoutProps) {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
                 onFocus={() => searchQuery && setShowResults(true)}
-                className="pl-12 pr-4 py-2.5 bg-muted/50 border-0 rounded-full text-sm placeholder:text-muted-foreground focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-0 transition-all duration-200 hover:bg-muted/70"
+                className="pl-12 pr-4 py-2.5 bg-white border border-white/20 rounded-full text-sm text-gray-900 placeholder:text-gray-400 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-0 focus-visible:border-white transition-all duration-200 hover:bg-white hover:border-white/40 shadow-sm"
               />
               {searchQuery && (
                 <button
@@ -224,7 +224,7 @@ export function Layout({ children }: LayoutProps) {
                     setSearchQuery('');
                     setShowResults(false);
                   }}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 >
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -296,8 +296,8 @@ export function Layout({ children }: LayoutProps) {
             {/* Create Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="hover:bg-muted">
-                  <Plus className="h-5 w-5" />
+                <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 p-0">
+                  <Plus className="h-4 w-4" strokeWidth={2.5} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
@@ -321,8 +321,8 @@ export function Layout({ children }: LayoutProps) {
             {/* Help Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="hover:bg-muted">
-                  <HelpCircle className="h-5 w-5" />
+                <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 p-0">
+                  <HelpCircle className="h-4 w-4" strokeWidth={2.5} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-40">
@@ -336,15 +336,42 @@ export function Layout({ children }: LayoutProps) {
             {/* Notifications Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="hover:bg-muted relative">
-                  <Bell className="h-6 w-6" />
+                <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 relative p-0">
+                  <Bell className="h-4 w-4" strokeWidth={2.5} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-64">
-                <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+              <DropdownMenuContent align="end" className="w-96 max-h-96">
+                <DropdownMenuLabel className="px-4 py-3 text-base font-semibold">Notifications</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <div className="p-4 text-center text-muted-foreground">
-                  No new notifications
+                <div className="max-h-80 overflow-y-auto">
+                  {/* Placeholder for notifications - replace with actual notification items */}
+                  <div className="p-6 text-center text-muted-foreground">
+                    <Bell className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
+                    <p className="text-sm">No new notifications</p>
+                    <p className="text-xs text-muted-foreground/70 mt-1">We'll notify you when something happens</p>
+                  </div>
+                  
+                  {/* Example notification items - you can uncomment and modify these when you have real notifications */}
+                  {/* 
+                  <div className="border-b border-border last:border-0">
+                    <div className="p-4 hover:bg-muted/50 cursor-pointer">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground">New candidate application</p>
+                          <p className="text-xs text-muted-foreground mt-1">John Doe applied for Software Engineer position</p>
+                          <p className="text-xs text-muted-foreground mt-1">2 minutes ago</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  */}
+                </div>
+                <DropdownMenuSeparator />
+                <div className="p-2">
+                  <button className="w-full text-center text-sm text-primary hover:text-primary/80 font-medium py-1.5 hover:bg-primary/5 rounded-md transition-colors">
+                    View all notifications
+                  </button>
                 </div>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -352,9 +379,9 @@ export function Layout({ children }: LayoutProps) {
             {/* User Profile Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 rounded-full p-0">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-primary text-primary-foreground">
+                <Button variant="ghost" className="h-11 w-11 rounded-full p-0">
+                  <Avatar className="h-11 w-11">
+                    <AvatarFallback className="bg-pink-500 text-white text-lg font-bold">
                       P
                     </AvatarFallback>
                   </Avatar>

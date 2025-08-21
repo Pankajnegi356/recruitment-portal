@@ -43,18 +43,29 @@ export default function CandidateCard({
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  // Get avatar color based on initials
+  // Get avatar color based on initials - using professional blue palette
   const getAvatarColor = (initials: string) => {
     const colors = [
       'bg-blue-500',
-      'bg-purple-500', 
-      'bg-green-500',
-      'bg-orange-500',
-      'bg-pink-500',
-      'bg-indigo-500'
+      'bg-blue-600',
+      'bg-blue-700', 
+      'bg-indigo-500',
+      'bg-indigo-600',
+      'bg-sky-500'
     ];
     const index = initials.charCodeAt(0) % colors.length;
     return colors[index];
+  };
+
+  // Get status badge color based on status
+  const getStatusColor = (status: number) => {
+    switch (status) {
+      case 1: return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 2: return 'bg-blue-500 text-white';
+      case 3: return 'bg-blue-600 text-white';
+      case 4: return 'bg-blue-700 text-white';
+      default: return 'bg-gray-100 text-gray-800';
+    }
   };
 
   const initials = getAvatarInitials(candidate.name);
@@ -81,7 +92,7 @@ export default function CandidateCard({
       <CardContent className="p-3">
         <div className="flex items-start justify-between mb-2">
           <Badge 
-            className={`text-xs px-2 py-1 rounded-full font-medium ${statusColor || 'bg-blue-500 text-white'}`}
+            className={`text-xs px-2 py-1 rounded-full font-medium ${statusColor || getStatusColor(candidate.status)}`}
           >
             {candidate.status === 1 ? 'Applied' : 
              candidate.status === 2 ? 'Shortlisted' :
