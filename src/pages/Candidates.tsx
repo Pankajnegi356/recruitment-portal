@@ -109,16 +109,20 @@ export default function Candidates() {
 
   // Format date for display
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    // Add 5 hours to convert UTC to IST
-    date.setHours(date.getHours() + 5);
-    return date.toLocaleDateString();
+    const utcDate = new Date(dateString);
+    // Convert UTC to IST by adding 5 hours 30 minutes (19800000 milliseconds)
+    const istDate = new Date(utcDate.getTime() + (5.5 * 60 * 60 * 1000));
+    return istDate.toLocaleDateString();
   };
 
   // Helper function to calculate time ago (same as Activity page)
   const getTimeAgo = (date: Date) => {
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
+    // Convert current time to IST and input date to IST
+    const nowUtc = new Date();
+    const nowIst = new Date(nowUtc.getTime() + (5.5 * 60 * 60 * 1000));
+    const dateIst = new Date(date.getTime() + (5.5 * 60 * 60 * 1000));
+    
+    const diffMs = nowIst.getTime() - dateIst.getTime();
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
