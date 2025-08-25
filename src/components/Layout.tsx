@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { Search, Plus, HelpCircle, Bell, User, Menu, UserPlus, Briefcase, Calendar, MessageCircle, Settings, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Search, Plus, HelpCircle, Bell, User, Menu, UserPlus, Briefcase, Calendar, MessageCircle, Settings, LogOut, Building2 } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -30,6 +32,8 @@ type SearchResult = {
 };
 
 export function Layout({ children }: LayoutProps) {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -38,6 +42,11 @@ export function Layout({ children }: LayoutProps) {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [allCandidates, setAllCandidates] = useState<any[]>([]);
   const [allJobs, setAllJobs] = useState<any[]>([]);
+  
+  // Dialog states for create forms
+  const [showCandidateForm, setShowCandidateForm] = useState(false);
+  const [showJobForm, setShowJobForm] = useState(false);
+  const [showTaskForm, setShowTaskForm] = useState(false);
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
@@ -94,7 +103,7 @@ export function Layout({ children }: LayoutProps) {
         type: 'candidate' as const,
         id: candidate.id,
         title: candidate.name,
-        subtitle: candidate.appliedFor || 'No position specified',
+        subtitle: candidate.position_applied || candidate.job_title || candidate.appliedFor || 'General Application',
         status: getStatusLabel(candidate.status) || 'Unknown',
       }));
 
@@ -185,6 +194,43 @@ export function Layout({ children }: LayoutProps) {
     }
   };
 
+  // Navigation handlers for create menu items
+  const handleCreateCandidate = () => {
+    navigate('/candidates');
+    // Trigger create candidate action after navigation
+    setTimeout(() => {
+      const createButton = document.querySelector('[data-create-candidate]') as HTMLButtonElement;
+      if (createButton) createButton.click();
+    }, 100);
+  };
+
+  const handleCreateJob = () => {
+    navigate('/jobs');
+    // Trigger create job action after navigation
+    setTimeout(() => {
+      const createButton = document.querySelector('[data-create-job]') as HTMLButtonElement;
+      if (createButton) createButton.click();
+    }, 100);
+  };
+
+  const handleCreateTask = () => {
+    navigate('/activity');
+    // Trigger create task action after navigation
+    setTimeout(() => {
+      const createButton = document.querySelector('[data-create-task]') as HTMLButtonElement;
+      if (createButton) createButton.click();
+    }, 100);
+  };
+
+  const handleCreateDepartment = () => {
+    navigate('/departments');
+    // Trigger create department action after navigation
+    setTimeout(() => {
+      const createButton = document.querySelector('[data-create-department]') as HTMLButtonElement;
+      if (createButton) createButton.click();
+    }, 100);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Top Navigation */}
@@ -200,8 +246,11 @@ export function Layout({ children }: LayoutProps) {
             >
               <Menu className="h-5 w-5" />
             </Button>
-            <div className="font-semibold text-lg text-nav-foreground">
-              Veersa Recruit
+            <div className="flex items-center gap-2">
+              <img src="/veersa-logo.svg" alt="Veersa Logo" className="h-8 w-8" />
+              <div className="font-semibold text-lg text-nav-foreground">
+                Veersa Recruitment Portal
+              </div>
             </div>
           </div>
 
@@ -303,17 +352,21 @@ export function Layout({ children }: LayoutProps) {
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuLabel>Create New</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem className="cursor-pointer" onClick={handleCreateCandidate}>
                   <UserPlus className="mr-2 h-4 w-4" />
                   <span>Create Candidate</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem className="cursor-pointer" onClick={handleCreateJob}>
                   <Briefcase className="mr-2 h-4 w-4" />
                   <span>Create Job</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem className="cursor-pointer" onClick={handleCreateTask}>
                   <Calendar className="mr-2 h-4 w-4" />
-                  <span>Create Activity</span>
+                  <span>Create Task</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer" onClick={handleCreateDepartment}>
+                  <Building2 className="mr-2 h-4 w-4" />
+                  <span>Create Department</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -382,18 +435,47 @@ export function Layout({ children }: LayoutProps) {
                 <Button variant="ghost" className="h-11 w-11 rounded-full p-0">
                   <Avatar className="h-11 w-11">
                     <AvatarFallback className="bg-pink-500 text-white text-lg font-bold">
-                      P
+                      {user ? `${user.first_name[0]}${user.last_name[0]}` : 'U'}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {user ? `${user.first_name} ${user.last_name}` : 'User'}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user?.email}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground capitalize">
+                      {user?.role} • {user?.department_name || 'No Department'}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {user && (user.role === 'manager' || user.role === 'hr_manager' || user.role === 'Hr_manager') && (
+                  <>
+                    <DropdownMenuItem 
+                      className="cursor-pointer" 
+                      onClick={() => navigate('/user-management')}
+                    >
+                      <UserPlus className="mr-2 h-4 w-4" />
+                      <span>User Management</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
                 <DropdownMenuItem className="cursor-pointer">
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive">
+                <DropdownMenuItem 
+                  className="cursor-pointer text-destructive focus:text-destructive"
+                  onClick={logout}
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Sign Out</span>
                 </DropdownMenuItem>

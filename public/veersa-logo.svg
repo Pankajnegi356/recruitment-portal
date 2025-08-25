@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <rect width="800" height="600" fill="white"/>
+  <!-- Blue V shape -->
+  <polygon points="50,50 350,50 425,600 200,600" fill="#2563eb"/>
+  <!-- Gray triangle -->
+  <polygon points="550,50 750,50 650,300" fill="#6b7280"/>
+</svg>

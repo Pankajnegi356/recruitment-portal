@@ -59,21 +59,23 @@ export const testConnection = async () => {
 
 // Status code mappings based on your backend system
 export const STATUS_CODES = {
-  REJECTED: 0,           // Failed or rejected candidates
-  APPLIED: 1,            // Initial application  
-  SHORTLISTED: 2,        // Passed initial screening
-  PRE_SCREENING: 3,      // Pre-screening test stage
-  TECHNICAL_INTERVIEW: 4, // Technical interview stage
-  HIRED: 5               // Successfully hired
+  REJECTED: 0,                    // Failed or rejected candidates
+  APPLIED: 1,                     // Initial application  
+  SHORTLISTED: 2,                 // Passed initial screening
+  PRESCREENING_TEST_PASSED: 3,    // Pre-screening test passed
+  NEGOTIATING_INTERVIEW: 4,       // Negotiating interview date
+  INTERVIEW_CONFIRMED: 5,         // Interview confirmed and link sent
+  INTERVIEW_CLEARED: 6            // Interview cleared
 };
 
 export const STATUS_LABELS = {
   0: 'Rejected',
   1: 'Applied',
   2: 'Shortlisted',
-  3: 'Pre Screening Test',
-  4: 'Technical Interview', 
-  5: 'Hired'
+  3: 'Prescreening Test Passed',
+  4: 'Negotiating Interview Date',
+  5: 'Interview Confirmed',
+  6: 'Interview Cleared'
 };
 
 export const getStatusLabel = (statusCode) => {
@@ -85,9 +87,10 @@ export const getStatusColor = (statusCode) => {
     case 0: return 'bg-red-500 text-white';        // Rejected
     case 1: return 'bg-blue-500 text-white';       // Applied
     case 2: return 'bg-yellow-500 text-white';     // Shortlisted
-    case 3: return 'bg-orange-500 text-white';     // Pre Screening Test
-    case 4: return 'bg-purple-500 text-white';     // Technical Interview
-    case 5: return 'bg-green-500 text-white';      // Hired
+    case 3: return 'bg-orange-500 text-white';     // Prescreening Test Passed
+    case 4: return 'bg-purple-500 text-white';     // Negotiating Interview Date
+    case 5: return 'bg-indigo-500 text-white';     // Interview Confirmed
+    case 6: return 'bg-green-500 text-white';      // Interview Cleared
     default: return 'bg-gray-500 text-white';
   }
 };
