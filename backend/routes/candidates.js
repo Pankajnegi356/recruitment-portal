@@ -47,7 +47,9 @@ router.get('/:id', async (req, res) => {
              COUNT(DISTINCT i.id) as interviews_count,
              COUNT(DISTINCT it.id) as test_count,
              AVG(it.test_score) as avg_prescreening_score,
-             MAX(it.test_score) as max_prescreening_score
+             MAX(it.test_score) as max_prescreening_score,
+             AVG(i.rating) as avg_interview_rating,
+             MAX(i.rating) as max_interview_rating
       FROM candidates c
       LEFT JOIN departments d ON c.department_id = d.id
       LEFT JOIN jobs j ON c.job_id = j.id

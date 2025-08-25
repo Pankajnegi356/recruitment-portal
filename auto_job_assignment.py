@@ -24,6 +24,7 @@ def get_db_connection():
 def assign_job_to_shortlisted_candidates():
     """
     Automatically assign job_id to candidates who have status 2 (shortlisted) but no job_id
+    Also update department_id for candidates who have job_id but missing department_id
     """
     connection = get_db_connection()
     if not connection:
@@ -33,49 +34,85 @@ def assign_job_to_shortlisted_candidates():
     try:
         cursor = connection.cursor()
         
-        # Find candidates with status 2 but no job_id
+        # Find candidates with status 2 but no job_id OR candidates with job_id but no department_id
         cursor.execute("""
-            SELECT id, name, email FROM candidates 
-            WHERE status = 2 AND (job_id IS NULL OR job_id = 0)
+            SELECT id, name, email, job_id, department_id FROM candidates 
+            WHERE status = 2 AND (
+                (job_id IS NULL OR job_id = 0) OR 
+                (job_id IS NOT NULL AND job_id > 0 AND (department_id IS NULL OR department_id = 0))
+            )
         """)
-        candidates_without_jobs = cursor.fetchall()
+        candidates_needing_updates = cursor.fetchall()
         
-        if not candidates_without_jobs:
-            print("✅ No candidates need job assignment")
+        if not candidates_needing_updates:
+            print("✅ No candidates need job or department assignment")
             return True
         
-        print(f"🔍 Found {len(candidates_without_jobs)} candidates needing job assignment")
+        print(f"🔍 Found {len(candidates_needing_updates)} candidates needing job/department assignment")
         
-        # Get the most recent active job
-        cursor.execute("""
-            SELECT id, title FROM jobs 
-            WHERE status = 'Active' OR status = 'active'
-            ORDER BY created_at DESC 
-            LIMIT 1
-        """)
-        available_job = cursor.fetchone()
+        # Separate candidates into two groups
+        candidates_without_jobs = []
+        candidates_without_departments = []
         
-        if not available_job:
-            print("⚠️ No active jobs available for assignment")
-            return False
+        for candidate_id, name, email, job_id, department_id in candidates_needing_updates:
+            if not job_id or job_id == 0:
+                candidates_without_jobs.append((candidate_id, name, email))
+            elif job_id and (not department_id or department_id == 0):
+                candidates_without_departments.append((candidate_id, name, email, job_id))
         
-        job_id, job_title = available_job
-        print(f"🎯 Assigning job '{job_title}' (ID: {job_id}) to {len(candidates_without_jobs)} candidates")
-        
-        # Update candidates with job assignment
-        assigned_count = 0
-        for candidate_id, name, email in candidates_without_jobs:
+        # Handle candidates without jobs (assign both job and department)
+        if candidates_without_jobs:
+            # Get the most recent active job
             cursor.execute("""
-                UPDATE candidates 
-                SET job_id = %s, updated_at = %s
-                WHERE id = %s
-            """, (job_id, datetime.now(), candidate_id))
+                SELECT id, title, department_id FROM jobs 
+                WHERE status = 'Active' OR status = 'active'
+                ORDER BY created_at DESC 
+                LIMIT 1
+            """)
+            available_job = cursor.fetchone()
             
-            print(f"✅ Assigned job to: {name} ({email})")
-            assigned_count += 1
+            if not available_job:
+                print("⚠️ No active jobs available for assignment")
+            else:
+                job_id, job_title, department_id = available_job
+                print(f"🎯 Assigning job '{job_title}' (ID: {job_id}) with department (ID: {department_id}) to {len(candidates_without_jobs)} candidates")
+                
+                for candidate_id, name, email in candidates_without_jobs:
+                    cursor.execute("""
+                        UPDATE candidates 
+                        SET job_id = %s, department_id = %s, updated_at = %s
+                        WHERE id = %s
+                    """, (job_id, department_id, datetime.now(), candidate_id))
+                    
+                    print(f"✅ Assigned job and department to: {name} ({email})")
+        
+        # Handle candidates with jobs but missing departments
+        if candidates_without_departments:
+            print(f"🔄 Updating departments for {len(candidates_without_departments)} candidates with existing jobs")
+            
+            for candidate_id, name, email, candidate_job_id in candidates_without_departments:
+                # Get department for this candidate's job
+                cursor.execute("""
+                    SELECT department_id, title FROM jobs 
+                    WHERE id = %s
+                """, (candidate_job_id,))
+                job_info = cursor.fetchone()
+                
+                if job_info and job_info[0]:
+                    job_department_id, job_title = job_info
+                    cursor.execute("""
+                        UPDATE candidates 
+                        SET department_id = %s, updated_at = %s
+                        WHERE id = %s
+                    """, (job_department_id, datetime.now(), candidate_id))
+                    
+                    print(f"✅ Updated department for: {name} ({email}) - Job: {job_title}")
+                else:
+                    print(f"⚠️ Could not find department for job ID {candidate_job_id} for candidate: {name}")
         
         connection.commit()
-        print(f"🎉 Successfully assigned jobs to {assigned_count} candidates")
+        total_updated = len(candidates_without_jobs) + len(candidates_without_departments)
+        print(f"🎉 Successfully updated {total_updated} candidates")
         return True
         
     except mysql.connector.Error as e:
@@ -115,7 +152,7 @@ def update_candidate_status_with_job_assignment(candidate_email, new_status):
         if new_status == 2 and not current_job_id:
             # Get available active job
             cursor.execute("""
-                SELECT id, title FROM jobs 
+                SELECT id, title, department_id FROM jobs 
                 WHERE status = 'Active' OR status = 'active'
                 ORDER BY created_at DESC 
                 LIMIT 1
@@ -123,15 +160,15 @@ def update_candidate_status_with_job_assignment(candidate_email, new_status):
             available_job = cursor.fetchone()
             
             if available_job:
-                job_id, job_title = available_job
-                print(f"🎯 Assigning job '{job_title}' (ID: {job_id}) to {name}")
+                job_id, job_title, department_id = available_job
+                print(f"🎯 Assigning job '{job_title}' (ID: {job_id}) with department (ID: {department_id}) to {name}")
                 
                 # Update with job assignment
                 cursor.execute("""
                     UPDATE candidates 
-                    SET status = %s, job_id = %s, updated_at = %s
+                    SET status = %s, job_id = %s, department_id = %s, updated_at = %s
                     WHERE email = %s
-                """, (new_status, job_id, datetime.now(), candidate_email))
+                """, (new_status, job_id, department_id, datetime.now(), candidate_email))
             else:
                 print(f"⚠️ No active jobs available to assign to {name}")
                 # Update status without job assignment
@@ -162,7 +199,7 @@ def update_candidate_status_with_job_assignment(candidate_email, new_status):
 
 def get_candidates_without_jobs():
     """
-    Get list of shortlisted candidates without job assignments
+    Get list of shortlisted candidates without job assignments or missing departments
     """
     connection = get_db_connection()
     if not connection:
@@ -171,9 +208,12 @@ def get_candidates_without_jobs():
     try:
         cursor = connection.cursor(dictionary=True)
         cursor.execute("""
-            SELECT id, name, email, status, created_at 
+            SELECT id, name, email, status, job_id, department_id, created_at 
             FROM candidates 
-            WHERE status = 2 AND (job_id IS NULL OR job_id = 0)
+            WHERE status = 2 AND (
+                (job_id IS NULL OR job_id = 0) OR 
+                (job_id IS NOT NULL AND job_id > 0 AND (department_id IS NULL OR department_id = 0))
+            )
             ORDER BY created_at DESC
         """)
         candidates = cursor.fetchall()
@@ -194,7 +234,10 @@ if __name__ == "__main__":
     if candidates_without_jobs:
         print(f"\n📋 Candidates without job assignments:")
         for candidate in candidates_without_jobs:
-            print(f"   - {candidate['name']} ({candidate['email']}) - Status: {candidate['status']}")
+            if not candidate['job_id'] or candidate['job_id'] == 0:
+                print(f"   - {candidate['name']} ({candidate['email']}) - Status: {candidate['status']}")
+            else:
+                print(f"   - {candidate['name']} ({candidate['email']}) - Status: {candidate['status']} - Job: {candidate['job_id']} (Missing department)")
     
     # Run assignment
     success = assign_job_to_shortlisted_candidates()

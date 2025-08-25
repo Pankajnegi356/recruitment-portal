@@ -109,7 +109,10 @@ export default function Candidates() {
 
   // Format date for display
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
+    const date = new Date(dateString);
+    // Add 5 hours to convert UTC to IST
+    date.setHours(date.getHours() + 5);
+    return date.toLocaleDateString();
   };
 
   // Helper function to calculate time ago (same as Activity page)
@@ -353,10 +356,28 @@ export default function Candidates() {
                     <span className="font-medium mr-2">Applied For:</span>
                     <span className="text-muted-foreground">{candidateDetails.position_applied || candidateDetails.job_title || 'General Application'}</span>
                   </div>
+                  {candidateDetails.experience_years && (
+                    <div className="flex items-center">
+                      <span className="font-medium mr-2">Experience:</span>
+                      <span className="text-muted-foreground">{candidateDetails.experience_years} years</span>
+                    </div>
+                  )}
                   <div className="flex items-center">
                     <span className="font-medium mr-2">Skill Match Score:</span>
                     <span className="text-muted-foreground">{candidateDetails.skill_match_score}%</span>
                   </div>
+                  {candidateDetails.avg_prescreening_score && (
+                    <div className="flex items-center">
+                      <span className="font-medium mr-2">Prescreening Score:</span>
+                      <span className="text-muted-foreground">{candidateDetails.avg_prescreening_score}/25 ({Math.round((candidateDetails.avg_prescreening_score / 25) * 100)}%)</span>
+                    </div>
+                  )}
+                  {candidateDetails.avg_interview_rating && (
+                    <div className="flex items-center">
+                      <span className="font-medium mr-2">Interview Rating:</span>
+                      <span className="text-muted-foreground">{candidateDetails.avg_interview_rating}/10</span>
+                    </div>
+                  )}
                   <div className="flex items-center">
                     <span className="font-medium mr-2">Application Date:</span>
                     <span className="text-muted-foreground">{formatDate(candidateDetails.created_at)}</span>
